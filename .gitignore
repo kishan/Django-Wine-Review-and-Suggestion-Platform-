@@ -4,3 +4,5 @@
 wine_platform/urls.pyc
 
 wine_platform/settings.pyc
+
+*.pyc
