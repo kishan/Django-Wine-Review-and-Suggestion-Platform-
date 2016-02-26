@@ -68,10 +68,15 @@ def user_recommendation_list(request):
     user_reviews_wine_ids = set(map(lambda x: x.wine.id, user_reviews))
 
     # get request user cluster name (just the first one righ now)
-    user_cluster_name = \
-        User.objects.get(username=request.user.username).cluster_set.first().name
+    try:
+        user_cluster_name = \
+            User.objects.get(username=request.user.username).cluster_set.first().name
+    except: # if no cluster has been assigned for a user, update clusters
+        update_clusters()
+        user_cluster_name = \
+            User.objects.get(username=request.user.username).cluster_set.first().name
 
-    # get usernames for other members of the cluster
+    # get usernames for other memebers of the cluster
     user_cluster_other_members = \
         Cluster.objects.get(name=user_cluster_name).users \
             .exclude(username=request.user.username).all()
@@ -88,6 +93,12 @@ def user_recommendation_list(request):
         list(Wine.objects.filter(id__in=other_users_reviews_wine_ids)), 
         key=lambda x: x.average_rating, 
         reverse=True
+    )
+
+    return render(
+        request, 
+        'reviews/user_recommendation_list.html', 
+        {'username': request.user.username,'wine_list': wine_list}
     )
 
     return render(
